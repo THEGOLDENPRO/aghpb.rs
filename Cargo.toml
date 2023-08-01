@@ -3,6 +3,8 @@ name = "aghpb"
 description="Anime girls holding programming books API wrapper for 🦀Rust."
 authors = ["Goldy"]
 license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/THEGOLDENPRO/aghpb.rs"
 edition = "2021"
 version = "1.0.0"
 
