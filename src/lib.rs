@@ -57,3 +57,16 @@ pub async fn random(category: Option<String>) -> Result<Book, Box<dyn Error>> {
 
     Ok(book)
 }
+
+pub async fn categories() -> Result<Vec<String>, Box<dyn Error>> {
+    //! Asynchronously grabs list of available categories.
+    //! 
+    //! Uses the ``/v1/categories`` endpoint.
+    let url: String = API_URL.to_owned() + "/v1/categories";
+    let res: Response = reqwest::get(url).await?;
+
+    let text = res.text().await?;
+    let json: Vec<String> = serde_json::from_str(text.as_str()).unwrap();
+
+    Ok(json)
+}
