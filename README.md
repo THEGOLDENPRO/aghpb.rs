@@ -11,6 +11,6 @@
 
 <div align="center">
 
-  ...
+  <sub>*read me soon™*</sub>
 
 </div>
