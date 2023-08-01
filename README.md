@@ -3,6 +3,9 @@
   # 🦀 aghpb.rs 📚
   <sub>Rust API wrapper for the anime girls holding programming books [API](https://api.devgoldy.xyz/aghpb/v1/docs)</sub>
 
+  [![Crates.io](https://img.shields.io/crates/v/aghpb?style=flat)](https://crates.io/crates/aghpb)
+  [![docs.rs](https://img.shields.io/docsrs/aghpb)]()
+
 </div>
 
 <div align="center">
