@@ -1,10 +1,10 @@
 [package]
 name = "aghpb"
-version = "0.1.0"
+description="Anime girls holding programming books API wrapper for 🦀Rust."
 authors = ["Goldy"]
+license-file = "LICENSE"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+version = "0.1.0"
 
 [dependencies]
 reqwest = "0.11.18"
