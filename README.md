@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 ```
 You can also retrieve specific categories of anime girls holding programming books like so:
 ```rust
-let book = aghpb::random(Some("rust".to_string())).await?;
+let book = aghpb::random(Some("rust")).await?;
 ```
 
 <br>
