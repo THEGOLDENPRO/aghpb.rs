@@ -4,8 +4,8 @@
 //! 
 //! -------------
 //! 
-//! # Example
-//! How to retrieve a random anime girl holding a programming book in Rust.
+//! # Examples
+//! ### How to retrieve a random anime girl holding a programming book in Rust.
 //! ```rust
 //! use std::error::Error;
 //! 
@@ -17,6 +17,22 @@
 //!     println!("Category: {}", book.category);
 //! 
 //!     book.image.save("./anime_girl.png")?;
+//! 
+//!     Ok(())
+//! }
+//! ```
+//! 
+//! ### How to retrieve a list of available categories.
+//! ```rust
+//! use std::error::Error;
+//! 
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn Error>> {
+//!     let categories = aghpb::categories().await?;
+//! 
+//!     for category in categories {
+//!         println!("{}", category);
+//!     }
 //! 
 //!     Ok(())
 //! }
@@ -34,10 +50,10 @@ pub struct Book {
     pub image: DynamicImage,
 }
 
+/// Asynchronously grabs a random anime girl holding a programming book.
+/// 
+/// Uses the ``/v1/random`` endpoint.
 pub async fn random(category: Option<String>) -> Result<Book, Box<dyn Error>> {
-    //! Asynchronously grabs a random anime girl holding a programming book.
-    //! 
-    //! Uses the ``/v1/random`` endpoint.
     let mut url: String = API_URL.to_owned() + "/v1/random";
 
     let category: String = category.unwrap_or("".to_string());
@@ -58,10 +74,10 @@ pub async fn random(category: Option<String>) -> Result<Book, Box<dyn Error>> {
     Ok(book)
 }
 
+/// Asynchronously grabs list of available categories.
+/// 
+/// Uses the ``/v1/categories`` endpoint.
 pub async fn categories() -> Result<Vec<String>, Box<dyn Error>> {
-    //! Asynchronously grabs list of available categories.
-    //! 
-    //! Uses the ``/v1/categories`` endpoint.
     let url: String = API_URL.to_owned() + "/v1/categories";
     let res: Response = reqwest::get(url).await?;
 
