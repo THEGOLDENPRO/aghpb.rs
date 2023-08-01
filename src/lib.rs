@@ -53,10 +53,10 @@ pub struct Book {
 /// Asynchronously grabs a random anime girl holding a programming book.
 /// 
 /// Uses the ``/v1/random`` endpoint.
-pub async fn random(category: Option<String>) -> Result<Book, Box<dyn Error>> {
+pub async fn random(category: Option<&str>) -> Result<Book, Box<dyn Error>> {
     let mut url: String = API_URL.to_owned() + "/v1/random";
 
-    let category: String = category.unwrap_or("".to_string());
+    let category = category.unwrap_or("");
 
     if category != "" {
         url.push_str(&("?category=".to_string() + &category));
