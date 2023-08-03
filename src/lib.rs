@@ -37,52 +37,51 @@
 //!     Ok(())
 //! }
 //! ```
+//! 
 
-use reqwest::Response;
-use std::error::Error;
-use image::DynamicImage;
+pub mod client;
+pub mod book;
 
-const API_URL: &str = "https://api.devgoldy.xyz/aghpb";
+pub use book::*;
+pub use client::*;
 
-pub struct Book {
-    pub name: String,
-    pub category: String,
-    pub image: DynamicImage,
+use std::sync::OnceLock;
+
+static _CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    let client = _CLIENT.get();
+
+    if let Some(random_client) = client {
+        random_client.clone()
+    } else {
+        let new_client = Client::new(None);
+        _CLIENT.set(new_client.clone()).expect("Failed to initialize client");
+        new_client
+    }
 }
 
 /// Asynchronously grabs a random anime girl holding a programming book.
 /// 
+/// NOTE: this uses the global client!
+/// If you want more customization/speed it maybe preferable to make
+/// your own client.
+/// 
 /// Uses the ``/v1/random`` endpoint.
-pub async fn random(category: Option<&str>) -> Result<Book, Box<dyn Error>> {
-    let mut url: String = API_URL.to_owned() + "/v1/random";
-
-    let category = category.unwrap_or("");
-
-    if category != "" {
-        url.push_str(&("?category=".to_string() + &category));
-    }
-
-    let res: Response = reqwest::get(url).await?;
-    let headers: &reqwest::header::HeaderMap = res.headers();
-
-    let book = Book {
-        name: String::from(headers.get("book-name").unwrap().to_str().unwrap()),
-        category: String::from(headers.get("book-category").unwrap().to_str().unwrap()),
-        image: image::load_from_memory(&(res.bytes().await?))?,
-    };
-
-    Ok(book)
+pub async fn random(category: Option<&str>) -> Result<Book, reqwest::Error> {
+    let client = get_client();
+    client.random(category).await
 }
 
 /// Asynchronously grabs list of available categories.
 /// 
+/// NOTE: this uses the global client!
+/// If you want more customization/speed it maybe preferable to make
+/// your own client.
+/// 
 /// Uses the ``/v1/categories`` endpoint.
-pub async fn categories() -> Result<Vec<String>, Box<dyn Error>> {
-    let url: String = API_URL.to_owned() + "/v1/categories";
-    let res: Response = reqwest::get(url).await?;
-
-    let text = res.text().await?;
-    let json: Vec<String> = serde_json::from_str(text.as_str()).unwrap();
-
-    Ok(json)
+pub async fn categories() -> Result<Vec<String>, reqwest::Error> {
+    let client = get_client();
+    client.categories().await
 }
+
