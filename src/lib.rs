@@ -84,4 +84,3 @@ pub async fn categories() -> Result<Vec<String>, reqwest::Error> {
     let client = get_client();
     client.categories().await
 }
-
