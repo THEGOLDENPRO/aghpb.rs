@@ -7,6 +7,7 @@
 //! # Examples
 //! ### How to retrieve a random anime girl holding a programming book in Rust.
 //! ```rust
+//! use tokio::fs;
 //! use std::error::Error;
 //! 
 //! #[tokio::main]
@@ -15,8 +16,9 @@
 //! 
 //!     println!("Name: {}", book.name);
 //!     println!("Category: {}", book.category);
+//!     println!("Date added: {}", book.date_added);
 //! 
-//!     book.image.save("./anime_girl.png")?;
+//!     fs::write("./anime_girl.png", book.raw_bytes).await?;
 //! 
 //!     Ok(())
 //! }
@@ -56,31 +58,31 @@ fn get_client() -> Client {
         random_client.clone()
     } else {
         let new_client = Client::new(None);
-        _CLIENT.set(new_client.clone()).expect("Failed to initialize client");
+        let _ = _CLIENT.set(new_client.clone());
         new_client
     }
 }
 
 /// Asynchronously grabs a random anime girl holding a programming book.
 /// 
-/// NOTE: this uses the global client!
+/// WARNING: Will panic on incorrect category.
+/// 
+/// NOTE: Use aghpb::Client for multiple requests. This uses a global client!
 /// If you want more customization/speed it maybe preferable to make
-/// your own client.
+/// your own client. 
 /// 
 /// Uses the ``/v1/random`` endpoint.
 pub async fn random(category: Option<&str>) -> Result<Book, reqwest::Error> {
-    let client = get_client();
-    client.random(category).await
+    get_client().random(category).await
 }
 
 /// Asynchronously grabs list of available categories.
 /// 
-/// NOTE: this uses the global client!
+/// NOTE: Use aghpb::Client for multiple requests. This uses a global client!
 /// If you want more customization/speed it maybe preferable to make
-/// your own client.
+/// your own client. 
 /// 
 /// Uses the ``/v1/categories`` endpoint.
 pub async fn categories() -> Result<Vec<String>, reqwest::Error> {
-    let client = get_client();
-    client.categories().await
+    get_client().categories().await
 }
