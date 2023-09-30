@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error, fmt};
 
 use chrono::DateTime;
 use reqwest::header::HeaderMap;
@@ -10,6 +10,20 @@ use crate::book::Book;
 pub struct Client {
     pub api_url: String,
     client: reqwest::Client
+}
+
+#[derive(Debug)]
+struct AGHPBError {
+    error: String,
+    message: String
+}
+
+impl Error for AGHPBError {}
+
+impl fmt::Display for AGHPBError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "API Error: [{}] {}", self.error, self.message)
+    }
 }
 
 impl Client {
@@ -25,7 +39,7 @@ impl Client {
     /// WARNING: Will panic on incorrect category.
     /// 
     /// Uses the ``/v1/random`` endpoint.
-    pub async fn random(&self, category: Option<&str>) -> Result<Book, reqwest::Error> {
+    pub async fn random(&self, category: Option<&str>) -> Result<Book, Box<dyn Error>> {
         let mut queries: Vec<(&str, &str)> = Vec::new();
 
         if let Some(category) = category {
@@ -40,7 +54,13 @@ impl Client {
 
             Ok(get_book(headers, bytes))
         } else {
-            Err(panic_on_api_error(&response.text().await?))
+            let error_json: HashMap<String, String> = serde_json::from_str(&response.text().await?).unwrap();
+            Err(
+                AGHPBError {
+                    error: error_json.get("error").unwrap().to_string(),
+                    message: error_json.get("message").unwrap().to_string()
+                }.into()
+            )
         }
 
     }
@@ -81,9 +101,4 @@ fn get_book(headers: HeaderMap, bytes: Bytes) -> Book {
         date_added,
         raw_bytes: bytes
     }
-}
-
-fn panic_on_api_error(text: &String) -> reqwest::Error {
-    let error_json: HashMap<String, String> = serde_json::from_str(text).unwrap();
-    panic!("API Error: {:?}", error_json.get("message").unwrap());
 }

@@ -47,7 +47,7 @@ pub mod book;
 pub use book::*;
 pub use client::*;
 
-use std::sync::OnceLock;
+use std::{sync::OnceLock, error::Error};
 
 static _CLIENT: OnceLock<Client> = OnceLock::new();
 
@@ -65,14 +65,12 @@ fn get_client() -> Client {
 
 /// Asynchronously grabs a random anime girl holding a programming book.
 /// 
-/// WARNING: Will panic on incorrect category.
-/// 
 /// NOTE: Use aghpb::Client for multiple requests. This uses a global client!
 /// If you want more customization/speed it maybe preferable to make
 /// your own client. 
 /// 
 /// Uses the ``/v1/random`` endpoint.
-pub async fn random(category: Option<&str>) -> Result<Book, reqwest::Error> {
+pub async fn random(category: Option<&str>) -> Result<Book, Box<dyn Error>> {
     get_client().random(category).await
 }
 
