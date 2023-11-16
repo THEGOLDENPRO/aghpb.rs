@@ -1,10 +1,6 @@
 use std::{collections::HashMap, error::Error, fmt};
 
-use chrono::DateTime;
-use reqwest::header::HeaderMap;
-use bytes::Bytes;
-
-use crate::book::Book;
+use crate::book::{Book, BookResult};
 
 #[derive(Clone, Debug)]
 pub struct Client {
@@ -34,9 +30,7 @@ impl Client {
         }
     }
 
-    /// Asynchronously grabs a random anime girl holding a programming book.
-    /// 
-    /// WARNING: Will panic on incorrect category.
+    /// Grabs a random anime girl holding a programming book.
     /// 
     /// Uses the ``/v1/random`` endpoint.
     pub async fn random(&self, category: Option<&str>) -> Result<Book, Box<dyn Error>> {
@@ -52,7 +46,7 @@ impl Client {
             let headers = response.headers().to_owned();
             let bytes = response.bytes().await?;
 
-            Ok(get_book(headers, bytes))
+            Ok(Book::from_response(headers, bytes))
         } else {
             let error_json: HashMap<String, String> = serde_json::from_str(&response.text().await?).unwrap();
             Err(
@@ -65,40 +59,42 @@ impl Client {
 
     }
 
-    /// Asynchronously grabs list of available categories.
+    /// Grabs list of available categories.
     /// 
     /// Uses the ``/v1/categories`` endpoint.
     pub async fn categories(&self) -> Result<Vec<String>, reqwest::Error> {
-        let mut base_url = self.api_url.clone();
-
-        base_url.push_str("/v1/categories");
-
-        let res = self.client.get(base_url).send().await?;
-        let json: Vec<String> = serde_json::from_str(&res.text().await?).expect("Failed to deserialize json response");
+        let res = self.client.get(self.api_url.clone() + "/v1/categories").send().await?;
+        let json: Vec<String> = serde_json::from_str(&res.text().await?).expect("Failed to deserialize json response!");
 
         Ok(json)
     }
-}
 
+    /// Allows you to search for anime girls holding programming books.
+    /// 
+    /// Uses the ``/v1/search`` endpoint.
+    pub async fn search(&self, query: &str, category: Option<&str>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
+        let mut queries: Vec<(&str, &str)> = Vec::new();
+        queries.push(("query", query));
 
-fn get_book(headers: HeaderMap, bytes: Bytes) -> Book {
-    let name = headers.get("book-name").expect("Failed acquiring book name header!").to_str().expect(
-        "Failed converting book name to string."
-    ).to_owned();
+        if let Some(category) = category {
+            queries.push(("category", category));
+        }
 
-    let category = headers.get("book-category").expect("Failed acquiring book category header!").to_str().expect(
-        "Failed converting book category to string.").to_owned();
+        if let Some(limit) = limit {
+            queries.push(("limit", limit.to_string().as_str()));
+        }
 
-    let date_added = DateTime::parse_from_str(headers.get("book-date-added").expect(
-        "Failed acquiring book date added header!"
-    ).to_str().expect("Failed converting book date time to string."), "%Y-%m-%d %H:%M:%S%z").expect(
-        "Failed to convert book's date added header to date time object."
-    );
+        let res = self.client.get(self.api_url.clone() + "/v1/search").query(&queries).send().await?;
+        let json: Vec<HashMap<String, String>> = serde_json::from_str(&res.text().await?).expect("Failed to deserialize json response!");
 
-    Book {
-        name,
-        category,
-        date_added,
-        raw_bytes: bytes
+        let mut books: Vec<BookResult> = Vec::new();
+
+        for book_dict in json {
+            books.push(
+                BookResult::from_json(book_dict)
+            );
+        }
+
+        Ok(books)
     }
 }

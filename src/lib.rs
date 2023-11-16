@@ -84,3 +84,14 @@ pub async fn random(category: Option<&str>) -> Result<Book, Box<dyn Error>> {
 pub async fn categories() -> Result<Vec<String>, reqwest::Error> {
     get_client().categories().await
 }
+
+/// Allows you to search for anime girls holding programming books.
+/// 
+/// NOTE: Use aghpb::Client for multiple requests. This uses a global client!
+/// If you want more customization/speed it maybe preferable to make
+/// your own client. 
+/// 
+/// Uses the ``/v1/search`` endpoint.
+pub async fn search(query: &str, category: Option<&str>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
+    get_client().search(query, category, limit).await
+}
