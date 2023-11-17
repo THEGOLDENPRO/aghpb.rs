@@ -30,6 +30,7 @@ More install instructions at [crates.io](https://crates.io/crates/aghpb).
 ## Examples
 This is how you may retrieve a random anime girls holding programming books:
 ```rust
+use tokio::fs;
 use std::error::Error;
 
 #[tokio::main]
@@ -47,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 ```
 You can also retrieve specific categories of anime girls holding programming books like so:
 ```rust
-let book = aghpb::random(Some("rust")).await?;
+let book = aghpb::random(Some("rust".into())).await?;
 ```
 
 <br>
@@ -63,6 +64,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
     for category in categories {
         println!("{}", category);
     }
+
+    Ok(())
+}
+```
+
+<br>
+
+How to search for an anime girl holding a programming book.
+> [!NOTE]
+> NEW in v1.4!
+```rust
+use std::error::Error;
+
+use tokio::fs;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let books = aghpb::search("tohru".into(), None, None).await?;
+
+    let book_data = &books[0]; // I'm selecting the first book just for this example.
+
+    println!("Name: {}", book_data.name);
+    println!("Category: {}", book_data.category);
+    println!("Commit Author: {}", book_data.commit_author);
+    println!("Commit URL: {}", book_data.commit_url);
+    println!("Date Added: {}", book_data.date_added);
+    println!("Search ID: {}", book_data.search_id);
+
+    let book = book_data.get_book().await?;
+
+    fs::write("./anime_girl.png", book.raw_bytes).await?;
 
     Ok(())
 }
