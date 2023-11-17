@@ -72,7 +72,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 <br>
 
 > [!INFO]
-> NEW in v4.0
+> NEW in v1.4!
 
 How to search for an anime girl holding a programming book.
 ```rust
