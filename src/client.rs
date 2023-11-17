@@ -1,6 +1,9 @@
 use std::{collections::HashMap, error::Error, fmt};
 
-use crate::book::{Book, BookResult};
+use reqwest::Response;
+use urlencoding::encode;
+
+use crate::book::{Book, BookData};
 
 #[derive(Clone, Debug)]
 pub struct Client {
@@ -42,20 +45,7 @@ impl Client {
 
         let response = self.client.get(self.api_url.clone() + "/v1/random").query(&queries).send().await?;
 
-        if response.status().is_success() {
-            let headers = response.headers().to_owned();
-            let bytes = response.bytes().await?;
-
-            Ok(Book::from_response(headers, bytes))
-        } else {
-            let error_json: HashMap<String, String> = serde_json::from_str(&response.text().await?).unwrap();
-            Err(
-                AGHPBError {
-                    error: error_json.get("error").unwrap().to_string(),
-                    message: error_json.get("message").unwrap().to_string()
-                }.into()
-            )
-        }
+        get_book_or_error(response).await
 
     }
 
@@ -72,7 +62,7 @@ impl Client {
     /// Allows you to search for anime girls holding programming books.
     /// 
     /// Uses the ``/v1/search`` endpoint.
-    pub async fn search(&self, query: String, category: Option<String>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
+    pub async fn search(&self, query: String, category: Option<String>, limit: Option<u8>) -> Result<Vec<BookData>, reqwest::Error> {
         let mut queries: Vec<(String, String)> = Vec::new();
         queries.push(("query".into(), query));
 
@@ -87,14 +77,45 @@ impl Client {
         let res = self.client.get(self.api_url.clone() + "/v1/search").query(&queries).send().await?;
         let json: Vec<HashMap<String, String>> = serde_json::from_str(&res.text().await?).expect("Failed to deserialize json response!");
 
-        let mut books: Vec<BookResult> = Vec::new();
+        let mut books: Vec<BookData> = Vec::new();
 
         for book_dict in json {
             books.push(
-                BookResult::from_json(book_dict)
+                BookData::from_json(book_dict)
             );
         }
 
         Ok(books)
+    }
+
+    /// Allows you to get a specific anime girls holding programming book by search ID.
+    /// 
+    /// Uses the ``/v1/get/id`` endpoint.
+    pub async fn get_id(&self, search_id: String) -> Result<Book, Box<dyn Error>> {
+
+        let response = self.client.get(
+            self.api_url.clone() + "/v1/get/id/" + encode(search_id.as_str()).to_string().as_str()
+        ).send().await?;
+
+        get_book_or_error(response).await
+    }
+}
+
+
+/// Get's a book from a response or throws an API error.
+async fn get_book_or_error(response: Response) -> Result<Book, Box<dyn Error>> {
+    if response.status().is_success() {
+        let headers = response.headers().to_owned();
+        let bytes = response.bytes().await?;
+
+        Ok(Book::from_response(headers, bytes))
+    } else {
+        let error_json: HashMap<String, String> = serde_json::from_str(&response.text().await?).unwrap();
+        Err(
+            AGHPBError {
+                error: error_json.get("error").unwrap().to_string(),
+                message: error_json.get("message").unwrap().to_string()
+            }.into()
+        )
     }
 }
