@@ -33,11 +33,11 @@ impl Client {
     /// Grabs a random anime girl holding a programming book.
     /// 
     /// Uses the ``/v1/random`` endpoint.
-    pub async fn random(&self, category: Option<&str>) -> Result<Book, Box<dyn Error>> {
-        let mut queries: Vec<(&str, &str)> = Vec::new();
+    pub async fn random(&self, category: Option<String>) -> Result<Book, Box<dyn Error>> {
+        let mut queries: Vec<(String, String)> = Vec::new();
 
         if let Some(category) = category {
-            queries.push(("category", category));
+            queries.push(("category".into(), category));
         }
 
         let response = self.client.get(self.api_url.clone() + "/v1/random").query(&queries).send().await?;
@@ -72,16 +72,16 @@ impl Client {
     /// Allows you to search for anime girls holding programming books.
     /// 
     /// Uses the ``/v1/search`` endpoint.
-    pub async fn search(&self, query: &str, category: Option<&str>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
-        let mut queries: Vec<(&str, &str)> = Vec::new();
-        queries.push(("query", query));
+    pub async fn search(&self, query: String, category: Option<String>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
+        let mut queries: Vec<(String, String)> = Vec::new();
+        queries.push(("query".into(), query));
 
         if let Some(category) = category {
-            queries.push(("category", category));
+            queries.push(("category".into(), category));
         }
 
         if let Some(limit) = limit {
-            queries.push(("limit", limit.to_string().as_str()));
+            queries.push(("limit".into(), limit.to_string()));
         }
 
         let res = self.client.get(self.api_url.clone() + "/v1/search").query(&queries).send().await?;

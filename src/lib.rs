@@ -70,7 +70,7 @@ fn get_client() -> Client {
 /// your own client. 
 /// 
 /// Uses the ``/v1/random`` endpoint.
-pub async fn random(category: Option<&str>) -> Result<Book, Box<dyn Error>> {
+pub async fn random(category: Option<String>) -> Result<Book, Box<dyn Error>> {
     get_client().random(category).await
 }
 
@@ -92,6 +92,6 @@ pub async fn categories() -> Result<Vec<String>, reqwest::Error> {
 /// your own client. 
 /// 
 /// Uses the ``/v1/search`` endpoint.
-pub async fn search(query: &str, category: Option<&str>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
+pub async fn search(query: String, category: Option<String>, limit: Option<u8>) -> Result<Vec<BookResult>, reqwest::Error> {
     get_client().search(query, category, limit).await
 }
