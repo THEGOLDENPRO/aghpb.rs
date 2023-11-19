@@ -2,8 +2,10 @@ use std::{collections::HashMap, error::Error};
 
 use bytes::Bytes;
 use chrono::{DateTime, FixedOffset};
-use image::DynamicImage;
 use reqwest::header::HeaderMap;
+
+#[cfg(feature = "image")]
+use image::DynamicImage;
 
 use crate::get_id;
 
@@ -108,6 +110,7 @@ impl Book {
         }
     }
 
+    #[cfg(feature = "image")]
     pub fn to_image(&self) -> DynamicImage {
         image::load_from_memory(&self.raw_bytes).expect("Failed to convert bytes into dynamic image object.")
     }

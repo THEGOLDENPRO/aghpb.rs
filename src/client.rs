@@ -110,12 +110,14 @@ async fn get_book_or_error(response: Response) -> Result<Book, Box<dyn Error>> {
 
         Ok(Book::from_response(headers, bytes))
     } else {
-        let error_json: HashMap<String, String> = serde_json::from_str(&response.text().await?).unwrap();
-        Err(
-            AGHPBError {
-                error: error_json.get("error").unwrap().to_string(),
-                message: error_json.get("message").unwrap().to_string()
-            }.into()
-        )
+        match serde_json::from_str::<HashMap<String, String>>(&response.text().await?) {
+            Ok(error_json) => Err(
+                AGHPBError {
+                    error: error_json.get("error").unwrap().to_string(),
+                    message: error_json.get("message").unwrap().to_string()
+                }.into()
+            ),
+            Err(_) => Err("Failed to phrase error json! I think the API is broken. 💀".into())
+        }
     }
 }
