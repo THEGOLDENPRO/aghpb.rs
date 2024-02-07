@@ -28,6 +28,14 @@ cargo add aghpb
 More install instructions at [crates.io](https://crates.io/crates/aghpb).
 
 ## Examples
+> [!Note]
+> 
+> Dependencies:
+> ```toml
+> [dependencies]
+> aghpb = "1.4.1"
+> tokio = { version = "1.36.0", features = ["full"] }
+> ```
 This is how you may retrieve a random anime girls holding programming books:
 ```rust
 use tokio::fs;
